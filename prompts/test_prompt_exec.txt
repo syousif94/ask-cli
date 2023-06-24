@@ -1,4 +1,4 @@
-log_file = logs/tests.md
+log_file = logs/test_prompt_exec.md
 =====
 
 look at the following watch_prompt.rs file and write tests for all of the functions.

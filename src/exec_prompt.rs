@@ -1,26 +1,49 @@
 use std::collections::HashMap;
-use std::fs::{self, DirBuilder, read_to_string};
+use std::fs::{self, DirBuilder, read_to_string, File};
 use regex::Regex;
 use std::error::Error;
 use async_openai::{
   types::{ChatCompletionRequestMessageArgs, ChatCompletionRequestMessage, Role}
 };
 use std::path::Path;
+use std::io::{Write};
 
 use crate::ai::{stream_request, create_open_ai_client};
 
-pub async fn watch_prompt(path: &str) -> Result<String, Box<dyn Error>> {
+pub async fn execute_prompt_file(path: &str) -> Result<String, Box<dyn Error>> {
     let prompt = load_prompt_from_file(path).expect("Failed to load prompt from file");
 
     let settings = parse_settings(&prompt);
     let replaced_prompt = replace_variables(&prompt, &settings);
 
-    let answer = generate_response(&replaced_prompt).await?;
+    let mut messages: Vec<ChatCompletionRequestMessage> = vec![];
 
-    if let Some(log_file_value) = settings.get("log_file") {
-      ensure_path_exists(log_file_value).expect("Unable to create path");
-      fs::write(log_file_value, &answer).expect("Unable to write file");
+    messages.push(
+      ChatCompletionRequestMessageArgs::default()
+            .content(replaced_prompt)
+            .role(Role::System)
+            .build()?
+    );
+
+    let client = create_open_ai_client().unwrap();
+
+    let filename = get_file_name(path).unwrap();
+
+    let mut extension = "md";
+
+    if let Some(ext) = settings.get("ext") {
+      extension = ext;
     }
+
+    let logpath = format!("logs/{}.{}", filename, extension);
+
+    ensure_path_exists(&logpath).expect("Unable to create path");
+
+    let appender = file_appender(&logpath);
+
+    let answer = stream_request(&client, &mut messages, appender).await?;
+    
+    fs::write(logpath, &answer).expect("Unable to write file");
 
     Ok(answer)
 }
@@ -35,24 +58,6 @@ fn ensure_path_exists(file_path: &str) -> Result<(), String> {
   }
 }
 
-async fn generate_response(prompt: &str) -> Result<String, Box<dyn Error>> {
-
-    let mut messages: Vec<ChatCompletionRequestMessage> = vec![];
-
-    messages.push(
-      ChatCompletionRequestMessageArgs::default()
-            .content(prompt)
-            .role(Role::System)
-            .build()?
-    );
-
-    let client = create_open_ai_client().unwrap();
-
-    let answer = stream_request(&client, &mut messages).await?;
-
-    Ok(answer)
-}
-
 fn load_prompt_from_file(file_path: &str) -> Result<String, std::io::Error> {
   read_to_string(file_path)
 }
@@ -65,7 +70,7 @@ fn parse_settings(prompt: &str) -> HashMap<String, String> {
       if line.is_empty() || line == "=====" {
           break;
       }
-      println!("line: {}\n", line);
+
       if let Some((key, value)) = line.split_once('=') {
           let key = key.trim();
           let value = value.trim();
@@ -109,17 +114,25 @@ fn replace_variables(prompt: &str, variables: &HashMap<String, String>) -> Strin
   replaced_prompt
 }
 
+fn get_file_name(file_path: &str) -> Option<String> {
+  let path = Path::new(file_path);
+  if let Some(file_stem) = path.file_stem() {
+      file_stem.to_str().map(|s| s.to_owned())
+  } else {
+      None
+  }
+}
+
+fn file_appender(file_name: &str) -> impl FnMut(&str) {
+  let mut file = File::create(file_name).unwrap();
+  move |s| {
+      writeln!(file, "{}", s).unwrap();
+  }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_generate_response() {
-        let prompt = "Hello, how are you doing today?";
-        let result = tokio_test::block_on(generate_response(prompt));
-
-        assert!(result.is_ok());
-    }
 
     #[test]
     fn test_parse_settings() {

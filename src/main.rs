@@ -1,10 +1,10 @@
-pub mod watch_prompt;
+pub mod exec_prompt;
 pub mod secure_storage;
 pub mod ai;
 
 
 use clap::{Args, Parser, Subcommand};
-use watch_prompt::watch_prompt;
+use exec_prompt::execute_prompt_file;
 
 use std::error::Error;
 use std::io::{Write};
@@ -15,14 +15,13 @@ use async_openai::{
     types::{ChatCompletionRequestMessageArgs, ChatCompletionRequestMessage, Role},
 };
 use ai::{create_open_ai_client, stream_request};
+use std::path::Path;
 
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct App {
     question: Option<String>,
-    #[arg(short, long)]
-    prompt: Option<String>,
     #[clap(subcommand)]
     command: Option<Command>,
 }
@@ -42,7 +41,7 @@ async fn answer(messages: &mut Vec<ChatCompletionRequestMessage>) -> Result<Stri
 
     let client = create_open_ai_client().unwrap();
 
-    let answer = stream_request(&client, messages).await?;
+    let answer = stream_request(&client, messages, |_s|{}).await?;
 
     Ok(answer)
 }
@@ -93,7 +92,7 @@ async fn handle_question(question: &str, messages: &mut Vec<ChatCompletionReques
 }
 
 async fn handle_prompt_arg(prompt_path: &str) -> Result<(), Box<dyn Error>> {
-    watch_prompt(prompt_path).await?;
+    execute_prompt_file(prompt_path).await?;
 
     Ok(())
 }
@@ -114,16 +113,16 @@ fn handle_clear_command() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn is_valid_file_path(path_str: &str) -> bool {
+    let path = Path::new(path_str);
+    path.exists() && path.is_file()
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = App::parse();
 
     let mut messages: Vec<ChatCompletionRequestMessage> = vec![];
-
-    if let Some(prompt) = args.prompt {
-        handle_prompt_arg(&prompt).await?;
-        return Ok(());
-    }
 
     match args.command {
         Some(Command::Key(key_args)) => {
@@ -135,6 +134,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         None => {
             match args.question {
                 Some(question) => {
+                    if is_valid_file_path(&question) {
+                        handle_prompt_arg(&question).await?;
+                        return Ok(())
+                    }
                     handle_question(&question, &mut messages).await?;
                 }
                 None => {

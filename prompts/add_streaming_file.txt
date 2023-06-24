@@ -1,26 +1,8 @@
-use async_openai::{
-  types::{CreateChatCompletionRequestArgs,ChatCompletionRequestMessage},
-  Client,
-};
-use std::error::Error;
-use std::io::{stdout, Write};
+how can i fix the error with on_content
 
-use async_openai::config::OpenAIConfig;
+```rust
 
-use futures::StreamExt;
-
-use crate::secure_storage::get_api_key;
-
-pub fn create_open_ai_client() -> Result<Client<OpenAIConfig>, Box<dyn Error>> {
-  let api_key = get_api_key().unwrap();
-
-  let config = OpenAIConfig::new().with_api_key(api_key);
-
-  let client = Client::with_config(config);
-
-  Ok(client)
-}
-pub async fn stream_request<F>(client: &Client<OpenAIConfig>, messages: &mut Vec<ChatCompletionRequestMessage>, mut on_content: F) -> Result<String, Box<dyn Error>>
+ pub async fn stream_request<F>(client: &Client<OpenAIConfig>, messages: &mut Vec<ChatCompletionRequestMessage>, mut on_content: Option<F>) -> Result<String, Box<dyn Error>>
 where
     F: FnMut(&str),
 {
@@ -53,3 +35,5 @@ where
 
     Ok(answer)
 }
+
+```
