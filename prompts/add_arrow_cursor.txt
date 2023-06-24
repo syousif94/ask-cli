@@ -1,0 +1,7 @@
+log_file = logs/add_arrow.md
+=====
+we want to be able to move the cursor with the arrow keys when the user hasn't provided any command line args and has entered the repl mode in the main.rs file. implement the cursor movement ability.
+
+main.rs:
+
+{{file: src/main.rs}}

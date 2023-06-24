@@ -1,0 +1,16 @@
+log_file = logs/diff_main.diff
+=====
+
+Create a git diff to update main.rs with the code contained in add_arrow.md.
+
+Do NOT include any text before or after the bash script code in your answer. Do NOT use markdown in your answer.
+
+main.rs file contents:
+
+{{file: src/main.rs}}
+
+END main.rs
+
+add_arrow.md file contents:
+
+{{file: logs/add_arrow.md}}

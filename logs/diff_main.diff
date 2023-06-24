@@ -1,0 +1,98 @@
+```diff
+--- main.rs	2021-11-01 13:27:10.000000000 -0700
++++ main.rs	2021-11-03 08:55:33.000000000 -0700
+@@ -3,6 +3,7 @@
+ pub mod secure_storage;
+ pub mod ai;
+ 
+ 
++use termion::event::Key;
+ use clap::{Args, Parser, Subcommand};
+ use watch_prompt::watch_prompt;
+ 
+@@ -21,6 +22,7 @@
+ #[derive(Parser, Debug)]
+ #[command(author, version, about, long_about = None)]
+ struct App {
++    #[clap(short, long)]
+     question: Option<String>,
+     #[arg(short, long)]
+     prompt: Option<String>,
+@@ -32,6 +34,7 @@
+ }
+ 
+ 
++#[derive(Debug, Subcommand)]
+ enum Command {
+     Key(KeyArgs),
+     Clear {},
+@@ -42,7 +45,48 @@
+ }
+ 
+ 
++#[derive(Debug, Args)]
+ struct KeyArgs {
+     key: String,
+ }
++
++
++async fn handle_question(question: &str, messages: &mut Vec<ChatCompletionRequestMessage>) -> Result<(), Box<dyn Error>> {
++    let mut cursor_position = 0;
++    let stdin = std::io::stdin();
++    let mut stdin_locked = stdin.lock();
++    let mut question = String::new();
++
++    print!("> ");
++    let _ = std::io::stdout().flush();
++
++    for key in stdin_locked.keys() {
++        match key? {
++            Key::Char('\n') => break,
++            Key::Char(c) => {
++                question.insert(cursor_position, c);
++                cursor_position += 1;
++            }
++            Key::Backspace => {
++                if cursor_position > 0 {
++                    question.remove(cursor_position - 1);
++                    cursor_position -= 1;
++                }
++            }
++            Key::Delete => {
++                if cursor_position < question.len() {
++                    question.remove(cursor_position);
++                }
++            }
++            Key::Left => {
++                if cursor_position > 0 {
++                    cursor_position -= 1;
++                }
++            }
++            Key::Right => {
++                if cursor_position < question.len() {
++                    cursor_position += 1;
++                }
++            }
++            _ => {}
++        }
++
++        print!("\r> {}{}", question, termion::cursor::Goto((cursor_position + 2) as u16, 1));
++        let _ = std::io::stdout().flush();
++    }
++
++    Ok(())
++}
+ 
+ async fn handle_prompt_arg(prompt_path: &str) -> Result<(), Box<dyn Error>> {
+     watch_prompt(prompt_path).await?;
+@@ -57,8 +101,7 @@
+         match args.question {
+             Some(question) => {
+                 handle_question(&question, &mut messages).await?;
+-            }
+-            None => {
++            } None => {
+                 println!("What can I assist you with?");
+                 loop {
+                     print!("> ");
+```

@@ -1,0 +1,8 @@
+log_file = logs/tests.md
+=====
+
+look at the following watch_prompt.rs file and write tests for all of the functions.
+
+file contents:
+
+{{file: src/watch_prompt.rs}}

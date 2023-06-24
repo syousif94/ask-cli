@@ -1,0 +1,14 @@
+We have prompt strings that looks like this:
+
+```
+log_file_name = refactor_main.md
+=====
+
+look at the following main.rs file and rewrite it into separate modules.
+
+{{file: src/main.rs}}
+```
+
+We want to parse out anything above the ===== into a settings hashmap containing each line as a key value pair. We then want extract the string under the ===== and replace any occurance of double brackets with variables named in the double brackets.
+
+Please write this in an example prompt_injector.rs file.
