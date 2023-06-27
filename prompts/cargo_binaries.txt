@@ -1,0 +1,1 @@
+how do i build binaries for a cli app for apple silicon, x86 osx, and linux using cargo and then package them for distribution on homebrew? use the github repo syousif94/ask-cli as the host for binaries in any examples. I am building in an apple silicon evironment.

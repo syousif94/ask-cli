@@ -29,10 +29,15 @@ Write tests for the following main.rs file
 
 ### Installation
 
-`brew install ask-cli`
+`brew install syousif94/ask-cli`
 
 ### TODO / Nice to have
 
-[] timestamps for exported chat log
-[] enter chat after passing prompt template
-[] watch_dir in prompt template settings
+- [ ] timestamps for exported chat log
+- [ ] use AI generated summary as file names for logs
+- [ ] enter chat after passing prompt template
+- [ ] watch_dir in prompt template settings
+- [ ] implement something like log 1 in the chat to only get the recent X logs
+- [ ] add arrow key and multi line editing to the chat interface with termion or tui
+- [ ] stream the chat to a file
+- [ ] add tools to the chat system message
