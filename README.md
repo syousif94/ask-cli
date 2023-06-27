@@ -29,7 +29,10 @@ Write tests for the following main.rs file
 
 ### Installation
 
-`brew install syousif94/ask-cli`
+```bash
+brew tap syousif94/ask
+brew install ask
+```
 
 ### TODO / Nice to have
 
