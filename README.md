@@ -36,6 +36,7 @@ brew install ask
 
 ### TODO / Nice to have
 
+- [ ] keyring-rs doesn't seem to like codespace linux default libs
 - [ ] timestamps for exported chat log
 - [ ] use AI generated summary as file names for logs
 - [ ] enter chat after passing prompt template
