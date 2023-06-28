@@ -20,6 +20,7 @@ pub fn create_open_ai_client() -> Result<Client<OpenAIConfig>, Box<dyn Error>> {
 
   Ok(client)
 }
+
 pub async fn stream_request<F>(client: &Client<OpenAIConfig>, messages: &mut Vec<ChatCompletionRequestMessage>, mut on_content: F) -> Result<String, Box<dyn Error>>
 where
     F: FnMut(&str),

@@ -13,7 +13,12 @@ pub fn get_api_key() -> Result<String, Box<dyn Error>> {
 
           key = key.trim().to_string();
 
-          entry.set_password(&key)?;
+          entry.set_password(&key).unwrap_or_else(|err| {
+            // TODO: fix this shit on linux
+            println!("An error occurred: {}", err);
+            ()
+          });
+
           key
       }
   };
