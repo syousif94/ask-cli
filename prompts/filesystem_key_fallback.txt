@@ -1,0 +1,6 @@
+You have been given code from a file called secure_storage.rs. The purpose of the code is to store a string in the user's keychain.
+If an error arises when saving the key, it should be written to a text file in a hidden folder in the user's home directory, something like "~/.ask-cli/.env". Furthermore, if the key is not present in the keychain, the code should look for the text file on the filesystem and load the key from there. Please output the ammended code.
+
+Code from file:
+
+{{file: src/secure_storage.rs}}

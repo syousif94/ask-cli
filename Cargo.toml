@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 async-openai = "0.11.0"
 clap = { version = "4.3.4", features = ["derive"] }
+dirs = "5.0.1"
 futures = "0.3.28"
 keyring = "2.0.3"
 regex = "1.8.4"
